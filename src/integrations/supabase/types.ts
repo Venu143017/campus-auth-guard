@@ -61,6 +61,30 @@ export type Database = {
           },
         ]
       }
+      login_attempts: {
+        Row: {
+          attempt_time: string
+          id: string
+          identifier: string
+          ip_address: string | null
+          success: boolean
+        }
+        Insert: {
+          attempt_time?: string
+          id?: string
+          identifier: string
+          ip_address?: string | null
+          success?: boolean
+        }
+        Update: {
+          attempt_time?: string
+          id?: string
+          identifier?: string
+          ip_address?: string | null
+          success?: boolean
+        }
+        Relationships: []
+      }
       students: {
         Row: {
           created_at: string | null
@@ -99,7 +123,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_old_login_attempts: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
