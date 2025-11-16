@@ -30,7 +30,7 @@ const Auth = () => {
         .from('students')
         .select('email')
         .eq('roll_number', loginData.rollNumber)
-        .single();
+        .maybeSingle();
 
       if (studentError || !studentData) {
         toast.error("Invalid roll number or password");
