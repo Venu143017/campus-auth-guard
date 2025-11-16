@@ -17,9 +17,9 @@ const Dashboard = () => {
   const [showCamera, setShowCamera] = useState(false);
 
   // College coordinates (example: set your college location)
-  const COLLEGE_LAT = 28.6139; // Example: Delhi
-  const COLLEGE_LON = 77.2090;
-  const ALLOWED_RADIUS_METERS = 100;
+  const COLLEGE_LAT = 17.331450; // Example: Hyderabad
+  const COLLEGE_LON = 78.297657;
+  const ALLOWED_RADIUS_METERS = 1000;
 
   useEffect(() => {
     checkUser();
