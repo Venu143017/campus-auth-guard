@@ -57,7 +57,6 @@ const AttendanceCamera = ({ studentData, onAttendanceMarked }: AttendanceCameraP
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
         videoRef.current.onloadedmetadata = () => {
           if (modelsLoaded) {
             startFaceDetection();
