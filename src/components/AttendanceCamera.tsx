@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { Camera, Mic, Loader2, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import * as faceapi from '@vladmandic/face-api';
 
 interface AttendanceCameraProps {
   studentData: any;
@@ -15,8 +16,14 @@ const AttendanceCamera = ({ studentData, onAttendanceMarked }: AttendanceCameraP
   const [faceDetected, setFaceDetected] = useState(false);
   const [voiceVerifying, setVoiceVerifying] = useState(false);
   const [voiceVerified, setVoiceVerified] = useState(false);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const detectionIntervalRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    loadFaceDetectionModels();
+  }, []);
 
   useEffect(() => {
     if (cameraActive) {
@@ -27,6 +34,20 @@ const AttendanceCamera = ({ studentData, onAttendanceMarked }: AttendanceCameraP
     };
   }, [cameraActive]);
 
+  const loadFaceDetectionModels = async () => {
+    try {
+      const MODEL_URL = '/models';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+      setModelsLoaded(true);
+    } catch (error) {
+      console.error('Failed to load face detection models:', error);
+      toast.error('Face detection models not available. Using fallback mode.');
+      setModelsLoaded(false);
+    }
+  };
+
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -36,18 +57,52 @@ const AttendanceCamera = ({ studentData, onAttendanceMarked }: AttendanceCameraP
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        // Simulate face detection after 2 seconds (in production, use actual face detection)
-        setTimeout(() => {
-          setFaceDetected(true);
-          toast.success("Face detected!");
-        }, 2000);
+        videoRef.current.onloadedmetadata = () => {
+          if (modelsLoaded) {
+            startFaceDetection();
+          } else {
+            // Fallback if models not loaded
+            setTimeout(() => {
+              setFaceDetected(true);
+              toast.success("Face detected (fallback mode)!");
+            }, 2000);
+          }
+        };
       }
     } catch (error) {
       toast.error("Unable to access camera. Please enable camera permissions.");
     }
   };
 
+  const startFaceDetection = () => {
+    if (!videoRef.current || !modelsLoaded) return;
+
+    detectionIntervalRef.current = window.setInterval(async () => {
+      if (videoRef.current && !faceDetected) {
+        try {
+          const detections = await faceapi
+            .detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
+            .withFaceLandmarks()
+            .withFaceDescriptors();
+
+          if (detections.length > 0) {
+            setFaceDetected(true);
+            toast.success("Face detected!");
+            if (detectionIntervalRef.current) {
+              clearInterval(detectionIntervalRef.current);
+            }
+          }
+        } catch (error) {
+          console.error('Face detection error:', error);
+        }
+      }
+    }, 100);
+  };
+
   const stopCamera = () => {
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+    }
     if (videoRef.current?.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach(track => track.stop());
