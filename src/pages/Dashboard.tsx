@@ -19,7 +19,7 @@ const Dashboard = () => {
   // College coordinates (example: set your college location)
   const COLLEGE_LAT = 17.331450; // Example: Hyderabad
   const COLLEGE_LON = 78.297657;
-  const ALLOWED_RADIUS_METERS = 1000;
+  const ALLOWED_RADIUS_METERS = 20000;
 
   useEffect(() => {
     checkUser();
