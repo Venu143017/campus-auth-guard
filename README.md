@@ -1,6 +1,6 @@
 
 ## Project info
-
+it is an attendance system
 
 ## How can I edit this code?
 
