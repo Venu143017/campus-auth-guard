@@ -1,6 +1,6 @@
 
 ## Project info
-it is an collage attendance system
+it is an collage attendance system,it help both for students & leacher's 
 
 ## How can I edit this code?
 
